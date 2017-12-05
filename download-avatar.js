@@ -39,7 +39,7 @@ var downloadImageByURL = (url, filepath) => {
 
 // -------------
 
-getRepoContributors("jquery", "jquery", (err, contributors) => {
+getRepoContributors(repoOwner, repoName, (err, contributors) => {
   console.log("Errors:", err);
 
   contributors.forEach((contributor) => {
