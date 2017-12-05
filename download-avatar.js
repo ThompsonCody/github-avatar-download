@@ -9,8 +9,7 @@ const repoName = process.argv[3];
 console.log("Hari Om, welcome to the GittyFubs avatar downroader");
 
 
-
-var getRepoContributors = (repoOwner, repoName, cb) => {
+var getRepoContributors = (repoOwner, repoName, callback) => {
 
   let options = {
     url: `https://api.github.com/repos/${repoOwner}/${repoName}/contributors`,
@@ -21,8 +20,16 @@ var getRepoContributors = (repoOwner, repoName, cb) => {
   };
 
   request(options, (err, res, body) => {
+
     let parsedContributors = JSON.parse(body);
-    cb(err, parsedContributors);
+
+    if (parsedContributors.message === "Not Found"){
+      callback("Not found", []);
+    } else {
+      callback(null, parsedContributors);
+    }
+
+
   });
 
 }
@@ -39,12 +46,23 @@ var downloadImageByURL = (url, filepath) => {
 
 // -------------
 
-getRepoContributors(repoOwner, repoName, (err, contributors) => {
-  console.log("Errors:", err);
 
-  contributors.forEach((contributor) => {
-    let path = `avatars/${contributor.login}.jpg`;
-    let url = contributor.avatar_url;
+if (!(repoOwner, repoName)) {
+  console.log("Please enter repo owner and name of the repo");
+  return false;
+}
+
+getRepoContributors(repoOwner, repoName, (err, contributors) => {
+
+  if (err) {
+    console.log(err);
+  }
+
+  contributors.forEach((person) => {
+
+    let path = `avatars/${person.login}.jpg`;
+    let url = person.avatar_url;
+
     downloadImageByURL(url, path);
   })
 
