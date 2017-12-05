@@ -1,9 +1,13 @@
 const request = require('request'),
       fs      = require('fs'),
-      token = require('./secrets.js');
+      token   = require('./secrets.js');
+
+const repoOwner = process.argv[2];
+const repoName = process.argv[3];
 
 
-console.log("Hari Om, welcome to the GittyFubs avatar downroader")
+console.log("Hari Om, welcome to the GittyFubs avatar downroader");
+
 
 
 var getRepoContributors = (repoOwner, repoName, cb) => {
@@ -17,25 +21,31 @@ var getRepoContributors = (repoOwner, repoName, cb) => {
   };
 
   request(options, (err, res, body) => {
-    cb(err, body);
+    let parsedContributors = JSON.parse(body);
+    cb(err, parsedContributors);
   });
 
 }
 
-getRepoContributors("jquery", "jquery", (err, res) => {
+var downloadImageByURL = (url, filepath) => {
+  request.get(url)
+    .on('error', (err) =>{
+        console.log(err);
+     })
+    .on('response', (res) => {
+      console.log(`Response status code: ${res.statusCode}`);
+    }).pipe(fs.createWriteStream(filepath));
+}
+
+// -------------
+
+getRepoContributors("jquery", "jquery", (err, contributors) => {
   console.log("Errors:", err);
-  // console.log("Result:", res);
-  let contributors = JSON.parse(res);
 
-  for(let value in contributors){
-    console.log(contributors[value].avatar_url);
-  }
+  contributors.forEach((contributor) => {
+    let path = `avatars/${contributor.login}.jpg`;
+    let url = contributor.avatar_url;
+    downloadImageByURL(url, path);
+  })
+
 });
-
-/*
-function getRepoContributors(repoOwner, repoName, cb) {
-  var url = "https://api.github.com/repos/" + repoOwner + "/" + repoName + "/contributors";
-  request(url, function(err, res, body) {
-    cb(err, body);
-  });
-}*/
